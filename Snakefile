@@ -1,9 +1,3 @@
-# default rule that tells snakemake to create the .vcf file if
-# it is not run with any specific rule or file request.
-rule all:
-    input:
-        "SRR2584857_1.ecoli-rel606.vcf"
-
 rule download_data:
     conda: "env-wget.yml"
     output: "SRR2584857_1.fastq.gz"
