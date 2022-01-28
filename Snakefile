@@ -1,3 +1,7 @@
+rule all:
+    input:
+        "SRR2584857_1.ecoli-rel606.vcf"
+
 rule download_data:
     conda: "env-wget.yml"
     output: "SRR2584857_1.fastq.gz"
@@ -35,19 +39,26 @@ rule sort_bam:
         samtools sort {input} > {output}
     """
 
+rule gunzip_fa:
+    input:
+        "ecoli-rel606.fa.gz"
+    output:
+        "ecoli-rel606.fa"
+    shell: """  
+        gunzip -c {input} > {output}
+    """
+
 rule call_variants:
     conda: "env-bcftools.yml"
     input:
-        ref="ecoli-rel606.fa.gz",
+        ref="ecoli-rel606.fa",
         bamsort="SRR2584857_1.ecoli-rel606.bam.sorted"
     output:
-        refout="ecoli-rel606.fa",
         pileup="SRR2584857_1.ecoli-rel606.pileup",
         bcf="SRR2584857_1.ecoli-rel606.bcf",
         vcf="SRR2584857_1.ecoli-rel606.vcf"
     shell: """
-        gunzip -c {input.ref} > {output.refout}
-        bcftools mpileup -Ou -f {output.refout} {input.bamsort} > {output.pileup}
+        bcftools mpileup -Ou -f {input.ref} {input.bamsort} > {output.pileup}
         bcftools call -mv -Ob {output.pileup} -o {output.bcf}
         bcftools view {output.bcf} > {output.vcf}
     """
